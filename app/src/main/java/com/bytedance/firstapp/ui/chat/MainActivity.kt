@@ -5,6 +5,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bytedance.firstapp.databinding.ActivityMainBinding
+import com.bytedance.firstapp.ui.session.SessionFragment
 
 class MainActivity : AppCompatActivity() {
 
@@ -17,6 +18,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        setupToolbar()
         setupRecyclerView()
         observeViewModel()
 
@@ -26,6 +28,13 @@ class MainActivity : AppCompatActivity() {
                 viewModel.sendMessage(messageText)
                 binding.editTextMessage.text.clear()
             }
+        }
+    }
+
+    private fun setupToolbar() {
+        binding.toolbar.setNavigationOnClickListener {
+            // When the navigation icon (session list) is clicked, show the DialogFragment
+            SessionFragment().show(supportFragmentManager, "SessionFragment")
         }
     }
 
@@ -40,7 +49,9 @@ class MainActivity : AppCompatActivity() {
         viewModel.messages.observe(this) { messages ->
             chatAdapter.submitList(messages)
             binding.recyclerViewChat.post { // Use post to scroll after the adapter has updated
-                binding.recyclerViewChat.scrollToPosition(messages.size - 1)
+                if (messages.isNotEmpty()) {
+                    binding.recyclerViewChat.scrollToPosition(messages.size - 1)
+                }
             }
         }
     }

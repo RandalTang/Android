@@ -45,6 +45,7 @@ dependencies {
     implementation(libs.com.google.android.material)
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.fragment.ktx)
 
     // Retrofit & Networking
     implementation(libs.retrofit)
