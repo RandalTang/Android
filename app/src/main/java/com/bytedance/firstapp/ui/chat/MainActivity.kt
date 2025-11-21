@@ -22,6 +22,9 @@ class MainActivity : AppCompatActivity() {
         setupRecyclerView()
         observeViewModel()
 
+        val sessionId = intent.getStringExtra("SESSION_ID")
+        viewModel.loadSession(sessionId)
+
         binding.buttonSend.setOnClickListener {
             val messageText = binding.editTextMessage.text.toString()
             if (messageText.isNotBlank()) {

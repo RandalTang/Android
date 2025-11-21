@@ -1,26 +1,32 @@
 package com.bytedance.firstapp.ui.session
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.map
+import com.bytedance.firstapp.data.local.AppDatabase
 import com.bytedance.firstapp.data.model.Session
+import com.bytedance.firstapp.data.repository.ChatRepository
 
-class SessionViewModel : ViewModel() {
+class SessionViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val _sessions = MutableLiveData<List<Session>>()
-    val sessions: LiveData<List<Session>> = _sessions
+    private val repository: ChatRepository
+
+    val sessions: LiveData<List<Session>>
 
     init {
-        loadStaticSessions()
-    }
+        val database = AppDatabase.getDatabase(application)
+        repository = ChatRepository(database.sessionDao(), database.messageDao())
 
-    private fun loadStaticSessions() {
-        val staticList = listOf(
-            Session(title = "关于安卓开发的问题", lastMessagePreview = "好的，我们来构建这个非常实用且重要的..."),
-            Session(title = "周末出游计划", lastMessagePreview = "我觉得去海边是个不错的选择，你觉得呢？"),
-            Session(title = "项目紧急需求讨论", lastMessagePreview = "这个新功能必须在周五之前上线，大家加把劲。"),
-            Session(title = "随便聊聊", lastMessagePreview = "哈哈哈哈那个电影太搞笑了！")
-        )
-        _sessions.value = staticList
+        sessions = repository.getSessions().asLiveData().map { entities ->
+            entities.map { entity ->
+                Session(
+                    id = entity.id,
+                    title = entity.title,
+                    lastMessagePreview = entity.lastMessagePreview
+                )
+            }
+        }
     }
 }
