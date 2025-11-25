@@ -46,8 +46,7 @@ class ChatAdapter : ListAdapter<ChatMessage, ChatAdapter.MessageViewHolder>(Chat
 
     class ChatMessageDiffCallback : DiffUtil.ItemCallback<ChatMessage>() {
         override fun areItemsTheSame(oldItem: ChatMessage, newItem: ChatMessage): Boolean {
-            // In a real app, you would use a unique ID. For now, we assume text and sender are unique enough.
-            return oldItem.text == newItem.text && oldItem.isSentByUser == newItem.isSentByUser
+            return oldItem.id == newItem.id
         }
 
         override fun areContentsTheSame(oldItem: ChatMessage, newItem: ChatMessage): Boolean {

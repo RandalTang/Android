@@ -16,8 +16,14 @@ object RetrofitInstance {
     }
 
     // Create an OkHttpClient and add the interceptor
-    private val client = OkHttpClient.Builder()
+    val client = OkHttpClient.Builder()
         .addInterceptor(loggingInterceptor)
+        .build()
+
+    // Client for SSE that avoids buffering the response body
+    val sseClient = OkHttpClient.Builder()
+        .addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.HEADERS })
+        .readTimeout(0, java.util.concurrent.TimeUnit.NANOSECONDS) // SSE connections can be long-lived
         .build()
 
     val api: ApiService by lazy {

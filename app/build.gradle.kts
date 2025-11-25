@@ -62,4 +62,7 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
+
+    // SSE
+    implementation("com.squareup.okhttp3:okhttp-sse:4.12.0")
 }
