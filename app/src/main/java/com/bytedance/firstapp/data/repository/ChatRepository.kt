@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.toRequestBody
 
 class ChatRepository(
     private val sessionDao: SessionDao,
@@ -123,10 +124,7 @@ class ChatRepository(
         val request = okhttp3.Request.Builder()
             .url("http://10.0.2.2:8000/api/v1/chat/completions/stream")
             .post(
-                okhttp3.RequestBody.create(
-                    "application/json".toMediaTypeOrNull(),
-                    com.google.gson.Gson().toJson(requestPayload)
-                )
+                com.google.gson.Gson().toJson(requestPayload).toRequestBody("application/json".toMediaTypeOrNull())
             )
             .build()
 
@@ -186,6 +184,20 @@ class ChatRepository(
         val session = sessionDao.getSessionById(sessionId)
         session?.let {
             sessionDao.updateSession(it.copy(lastMessagePreview = preview))
+        }
+    }
+
+    suspend fun deleteSession(sessionId: String) {
+        val session = sessionDao.getSessionById(sessionId)
+        session?.let {
+            sessionDao.deleteSession(it)
+        }
+    }
+
+    suspend fun renameSession(sessionId: String, newTitle: String) {
+        val session = sessionDao.getSessionById(sessionId)
+        session?.let {
+            sessionDao.updateSession(it.copy(title = newTitle))
         }
     }
 }

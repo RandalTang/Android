@@ -8,23 +8,34 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bytedance.firstapp.data.model.Session
 import com.bytedance.firstapp.databinding.ItemSessionBinding
 
-class SessionAdapter(private val onClick: (Session) -> Unit) : ListAdapter<Session, SessionAdapter.SessionViewHolder>(SessionDiffCallback()) {
+class SessionAdapter(
+    private val onClick: (Session) -> Unit,
+    private val onLongClick: (Session) -> Unit
+) : ListAdapter<Session, SessionAdapter.SessionViewHolder>(SessionDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SessionViewHolder {
         val binding = ItemSessionBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return SessionViewHolder(binding, onClick)
+        return SessionViewHolder(binding, onClick, onLongClick)
     }
 
     override fun onBindViewHolder(holder: SessionViewHolder, position: Int) {
         holder.bind(getItem(position))
     }
 
-    class SessionViewHolder(private val binding: ItemSessionBinding, private val onClick: (Session) -> Unit) : RecyclerView.ViewHolder(binding.root) {
+    class SessionViewHolder(
+        private val binding: ItemSessionBinding,
+        private val onClick: (Session) -> Unit,
+        private val onLongClick: (Session) -> Unit
+    ) : RecyclerView.ViewHolder(binding.root) {
         private var currentSession: Session? = null
 
         init {
             binding.root.setOnClickListener {
                 currentSession?.let { onClick(it) }
+            }
+            binding.root.setOnLongClickListener {
+                currentSession?.let { onLongClick(it) }
+                true
             }
         }
 

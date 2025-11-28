@@ -69,17 +69,62 @@ class SessionFragment : DialogFragment() {
     }
 
     private fun setupRecyclerView() {
-        sessionAdapter = SessionAdapter { session ->
-            val intent = Intent(requireContext(), MainActivity::class.java)
-            intent.putExtra("SESSION_ID", session.id)
-            startActivity(intent)
-            dismiss()
-            Toast.makeText(requireContext(), "Opening session: ${session.title}", Toast.LENGTH_SHORT).show()
-        }
+        sessionAdapter = SessionAdapter(
+            onClick = { session ->
+                val intent = Intent(requireContext(), MainActivity::class.java)
+                intent.putExtra("SESSION_ID", session.id)
+                startActivity(intent)
+                dismiss()
+                Toast.makeText(requireContext(), "Opening session: ${session.title}", Toast.LENGTH_SHORT).show()
+            },
+            onLongClick = { session ->
+                showSessionOptionsDialog(session)
+            }
+        )
         binding.recyclerViewSessions.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = sessionAdapter
         }
+    }
+
+    private fun showSessionOptionsDialog(session: com.bytedance.firstapp.data.model.Session) {
+        val options = arrayOf("重命名", "删除")
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("对话管理")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> showRenameDialog(session)
+                    1 -> showDeleteConfirmationDialog(session)
+                }
+            }
+            .show()
+    }
+
+    private fun showRenameDialog(session: com.bytedance.firstapp.data.model.Session) {
+        val input = android.widget.EditText(requireContext())
+        input.setText(session.title)
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("重命名对话")
+            .setView(input)
+            .setPositiveButton("重命名") { _, _ ->
+                val newTitle = input.text.toString()
+                if (newTitle.isNotBlank()) {
+                    viewModel.renameSession(session, newTitle)
+                }
+            }
+            .setNegativeButton("取消", null)
+            .show()
+    }
+
+    private fun showDeleteConfirmationDialog(session: com.bytedance.firstapp.data.model.Session) {
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("删除对话")
+            .setMessage("确定要删除 '${session.title}'?")
+            .setPositiveButton("删除") { _, _ ->
+                viewModel.deleteSession(session)
+            }
+            .setNegativeButton("取消", null)
+            .show()
     }
 
     private fun observeViewModel() {
