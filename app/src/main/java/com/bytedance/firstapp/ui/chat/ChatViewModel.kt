@@ -21,6 +21,9 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
     private val _currentSessionId = MutableLiveData<String>()
     val currentSessionId: LiveData<String> = _currentSessionId
 
+    private val _sessionTitle = MutableLiveData<String>()
+    val sessionTitle: LiveData<String> = _sessionTitle
+
     private val _streamingText = MutableLiveData<String?>()
 
     // Expose messages as LiveData, transformed from Repository Flow
@@ -74,6 +77,10 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
     fun loadSession(sessionId: String?) {
         if (sessionId != null) {
             _currentSessionId.value = sessionId
+            viewModelScope.launch {
+                val session = repository.getSessionById(sessionId)
+                _sessionTitle.value = session?.title ?: "Chat"
+            }
         } else {
             createNewSession()
         }
@@ -81,8 +88,10 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun createNewSession() {
         viewModelScope.launch {
-            val sessionId = repository.createSession("New Chat ${System.currentTimeMillis()}")
+            val title = "New Chat ${System.currentTimeMillis()}"
+            val sessionId = repository.createSession(title)
             _currentSessionId.value = sessionId
+            _sessionTitle.value = title
         }
     }
 
@@ -97,6 +106,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
                     .collect { partialText ->
                         Log.d("ChatViewModel", "Streaming update: ${partialText.length} chars")
                         _streamingText.value = partialText
+                        kotlinx.coroutines.delay(50) // Throttle updates to avoid flooding ListAdapter
                     }
                 _streamingText.value = null // Stop streaming (DB will have full message)
             } catch (e: Exception) {

@@ -11,6 +11,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -23,6 +24,8 @@ class ChatRepository(
     fun getSessions(): Flow<List<SessionEntity>> = sessionDao.getAllSessions()
 
     fun getMessages(sessionId: String): Flow<List<MessageEntity>> = messageDao.getMessagesForSession(sessionId)
+
+    suspend fun getSessionById(sessionId: String): SessionEntity? = sessionDao.getSessionById(sessionId)
 
     suspend fun createSession(title: String): String {
         val session = SessionEntity(
@@ -178,7 +181,7 @@ class ChatRepository(
         awaitClose {
             eventSource.cancel()
         }
-    }
+    }.flowOn(kotlinx.coroutines.Dispatchers.IO)
 
     private suspend fun updateSessionPreview(sessionId: String, preview: String) {
         val session = sessionDao.getSessionById(sessionId)
