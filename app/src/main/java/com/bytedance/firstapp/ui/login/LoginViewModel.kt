@@ -43,11 +43,11 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun register(username: String, password: String) {
+    fun register(username: String, password: String, phone: String? = null, email: String? = null) {
         _isLoading.value = true
         viewModelScope.launch {
             try {
-                val response = apiService.register(RegisterRequest(username, password))
+                val response = apiService.register(RegisterRequest(username, password, phone, email))
                 if (response.isSuccessful && response.body()?.status == "success") {
                      // Auto login after register if token is present, or just notify success
                      val body = response.body()

@@ -69,16 +69,16 @@ class MainActivity : AppCompatActivity() {
 
     private fun showLogoutDialog() {
         androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle("Logout")
-            .setMessage("Are you sure you want to logout?")
-            .setPositiveButton("Logout") { _, _ ->
+            .setTitle("退出登录")
+            .setMessage("确定要退出登录吗？")
+            .setPositiveButton("退出") { _, _ ->
                 // Call logout API if needed, for now just clear token
                 // Ideally call viewModel.logout() which calls API
                 tokenManager.clearToken()
                 startActivity(Intent(this, com.bytedance.firstapp.ui.login.LoginActivity::class.java))
                 finish()
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton("取消", null)
             .show()
     }
 

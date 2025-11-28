@@ -9,7 +9,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Welcome Back"
+        android:text="欢迎回来"
         android:textSize="24sp"
         android:textStyle="bold"
         android:layout_marginBottom="32dp"/>
@@ -18,7 +18,7 @@
         android:id="@+id/editTextUsername"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Username"
+        android:hint="用户名"
         android:inputType="text"
         android:layout_marginBottom="16dp"/>
 
@@ -26,7 +26,7 @@
         android:id="@+id/editTextPassword"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Password"
+        android:hint="密码"
         android:inputType="textPassword"
         android:layout_marginBottom="24dp"/>
 
@@ -34,14 +34,14 @@
         android:id="@+id/buttonLogin"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Login"
+        android:text="登录"
         android:layout_marginBottom="16dp"/>
 
     <Button
         android:id="@+id/buttonRegister"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Register"
+        android:text="注册"
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
 
     <ProgressBar
