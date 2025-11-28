@@ -5,8 +5,16 @@ data class LoginRequest(
     val password: String
 )
 
+data class User(
+    val id: Long,
+    val username: String,
+    val phone: String?,
+    val email: String?
+)
+
 data class LoginResponse(
     val token: String,
+    val user: User,
     val status: String
 )
 

@@ -20,15 +20,21 @@ class SessionViewModel(application: Application) : AndroidViewModel(application)
     init {
         val database = AppDatabase.getDatabase(application)
         repository = ChatRepository(database.sessionDao(), database.messageDao())
+        val tokenManager = com.bytedance.firstapp.util.TokenManager(application)
+        val userId = tokenManager.getUserId()
 
-        sessions = repository.getSessions().asLiveData().map { entities ->
-            entities.map { entity ->
-                Session(
-                    id = entity.id,
-                    title = entity.title,
-                    lastMessagePreview = entity.lastMessagePreview
-                )
+        sessions = if (userId != null) {
+            repository.getSessions(userId).asLiveData().map { entities ->
+                entities.map { entity ->
+                    Session(
+                        id = entity.id,
+                        title = entity.title,
+                        lastMessagePreview = entity.lastMessagePreview
+                    )
+                }
             }
+        } else {
+            androidx.lifecycle.MutableLiveData(emptyList())
         }
     }
     fun deleteSession(session: Session) {

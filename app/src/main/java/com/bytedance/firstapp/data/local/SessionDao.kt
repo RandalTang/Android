@@ -9,8 +9,8 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface SessionDao {
-    @Query("SELECT * FROM sessions ORDER BY createdAt DESC")
-    fun getAllSessions(): Flow<List<SessionEntity>>
+    @Query("SELECT * FROM sessions WHERE userId = :userId ORDER BY createdAt DESC")
+    fun getSessionsForUser(userId: String): Flow<List<SessionEntity>>
 
     @Query("SELECT * FROM sessions WHERE id = :id")
     suspend fun getSessionById(id: String): SessionEntity?

@@ -9,15 +9,21 @@ class TokenManager(context: Context) {
     companion object {
         private const val KEY_TOKEN = "auth_token"
         private const val KEY_USERNAME = "username"
+        private const val KEY_USER_ID = "user_id"
+        private const val KEY_PHONE = "phone"
+        private const val KEY_EMAIL = "email"
         private const val KEY_EXPIRY_TIME = "expiry_time"
         private const val EXPIRY_DURATION_MS = 3 * 24 * 60 * 60 * 1000L // 3 days
     }
 
-    fun saveToken(token: String, username: String) {
+    fun saveToken(token: String, username: String, userId: String, phone: String?, email: String?) {
         val expiryTime = System.currentTimeMillis() + EXPIRY_DURATION_MS
         prefs.edit()
             .putString(KEY_TOKEN, token)
             .putString(KEY_USERNAME, username)
+            .putString(KEY_USER_ID, userId)
+            .putString(KEY_PHONE, phone)
+            .putString(KEY_EMAIL, email)
             .putLong(KEY_EXPIRY_TIME, expiryTime)
             .apply()
     }
@@ -33,6 +39,18 @@ class TokenManager(context: Context) {
 
     fun getUsername(): String? {
         return prefs.getString(KEY_USERNAME, null)
+    }
+
+    fun getUserId(): String? {
+        return prefs.getString(KEY_USER_ID, null)
+    }
+
+    fun getPhone(): String? {
+        return prefs.getString(KEY_PHONE, null)
+    }
+
+    fun getEmail(): String? {
+        return prefs.getString(KEY_EMAIL, null)
     }
 
     fun clearToken() {

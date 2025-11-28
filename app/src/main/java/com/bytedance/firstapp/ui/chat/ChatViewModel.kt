@@ -88,10 +88,17 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun createNewSession() {
         viewModelScope.launch {
-            val title = "New Chat ${System.currentTimeMillis()}"
-            val sessionId = repository.createSession(title)
-            _currentSessionId.value = sessionId
-            _sessionTitle.value = title
+            val tokenManager = com.bytedance.firstapp.util.TokenManager(getApplication())
+            val userId = tokenManager.getUserId()
+            if (userId != null) {
+                val title = "New Chat ${System.currentTimeMillis()}"
+                val sessionId = repository.createSession(title, userId)
+                _currentSessionId.value = sessionId
+                _sessionTitle.value = title
+            } else {
+                // Handle case where userId is null (should not happen if logged in)
+                Log.e("ChatViewModel", "User ID is null, cannot create session")
+            }
         }
     }
 

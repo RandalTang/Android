@@ -21,17 +21,18 @@ class ChatRepository(
     private val messageDao: MessageDao
 ) {
 
-    fun getSessions(): Flow<List<SessionEntity>> = sessionDao.getAllSessions()
+    fun getSessions(userId: String): Flow<List<SessionEntity>> = sessionDao.getSessionsForUser(userId)
 
     fun getMessages(sessionId: String): Flow<List<MessageEntity>> = messageDao.getMessagesForSession(sessionId)
 
     suspend fun getSessionById(sessionId: String): SessionEntity? = sessionDao.getSessionById(sessionId)
 
-    suspend fun createSession(title: String): String {
+    suspend fun createSession(title: String, userId: String): String {
         val session = SessionEntity(
             id = java.util.UUID.randomUUID().toString(),
             title = title,
-            lastMessagePreview = ""
+            lastMessagePreview = "",
+            userId = userId
         )
         sessionDao.insertSession(session)
         return session.id

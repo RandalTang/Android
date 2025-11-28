@@ -30,7 +30,13 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 val response = apiService.login(LoginRequest(username, password))
                 if (response.status == "success") {
-                    tokenManager.saveToken(response.token, username)
+                    tokenManager.saveToken(
+                        response.token,
+                        response.user.username,
+                        response.user.id.toString(),
+                        response.user.phone,
+                        response.user.email
+                    )
                     _loginResult.value = Result.success(true)
                 } else {
                     _loginResult.value = Result.failure(Exception("Login failed: ${response.status}"))
@@ -52,7 +58,13 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                      // Auto login after register if token is present, or just notify success
                      val body = response.body()
                      if (body?.token != null) {
-                         tokenManager.saveToken(body.token, username)
+                         tokenManager.saveToken(
+                             body.token,
+                             body.user.username,
+                             body.user.id.toString(),
+                             body.user.phone,
+                             body.user.email
+                         )
                          _loginResult.value = Result.success(true)
                      } else {
                          // If no token returned, maybe just success message, user needs to login?
