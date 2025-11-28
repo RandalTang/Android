@@ -35,6 +35,22 @@ class ChatRepository(
             userId = userId
         )
         sessionDao.insertSession(session)
+        
+        // Sync with backend
+        try {
+            RetrofitInstance.api.createOrUpdateSession(
+                com.bytedance.firstapp.data.model.SessionRequest(
+                    id = session.id,
+                    title = session.title,
+                    userId = userId,
+                    lastMessagePreview = session.lastMessagePreview,
+                    createdAt = session.createdAt
+                )
+            )
+        } catch (e: Exception) {
+            android.util.Log.e("ChatRepository", "Failed to sync session creation with backend", e)
+        }
+        
         return session.id
     }
 
@@ -66,9 +82,15 @@ class ChatRepository(
             )
         }
 
+        // Get session to get userId
+        val session = sessionDao.getSessionById(sessionId)
+        val userId = session?.userId
+
         val request = ChatCompletionsRequest(
             prompt = text,
-            history = if (historyMessages.isNotEmpty()) historyMessages else null
+            history = if (historyMessages.isNotEmpty()) historyMessages else null,
+            sessionId = sessionId,
+            userId = userId
         )
 
         // 3. Call API
@@ -120,9 +142,19 @@ class ChatRepository(
             )
         }
 
+        // Get session to get userId (need to do this in coroutine or blocking, but flow builder is suspend-friendly if we launch or runBlocking. 
+        // Actually callbackFlow block is not suspend. We need to launch a coroutine or use runBlocking.
+        // Since we are in flowOn(IO), runBlocking is okay-ish but better to launch.
+        // However, we need the request payload to build the request.
+        // Let's use runBlocking for this quick DB fetch since we are on IO dispatcher.
+        val session = kotlinx.coroutines.runBlocking { sessionDao.getSessionById(sessionId) }
+        val userId = session?.userId
+
         val requestPayload = ChatCompletionsRequest(
             prompt = text,
-            history = if (historyMessages.isNotEmpty()) historyMessages else null
+            history = if (historyMessages.isNotEmpty()) historyMessages else null,
+            sessionId = sessionId,
+            userId = userId
         )
 
         val request = okhttp3.Request.Builder()
@@ -187,7 +219,26 @@ class ChatRepository(
     private suspend fun updateSessionPreview(sessionId: String, preview: String) {
         val session = sessionDao.getSessionById(sessionId)
         session?.let {
-            sessionDao.updateSession(it.copy(lastMessagePreview = preview))
+            val updatedSession = it.copy(lastMessagePreview = preview)
+            sessionDao.updateSession(updatedSession)
+            
+            // Sync with backend (Update)
+            // We only update if userId is present
+            it.userId?.let { userId ->
+                try {
+                    RetrofitInstance.api.createOrUpdateSession(
+                        com.bytedance.firstapp.data.model.SessionRequest(
+                            id = updatedSession.id,
+                            title = updatedSession.title,
+                            userId = userId,
+                            lastMessagePreview = updatedSession.lastMessagePreview,
+                            createdAt = updatedSession.createdAt
+                        )
+                    )
+                } catch (e: Exception) {
+                     android.util.Log.e("ChatRepository", "Failed to sync session update with backend", e)
+                }
+            }
         }
     }
 
@@ -195,13 +246,38 @@ class ChatRepository(
         val session = sessionDao.getSessionById(sessionId)
         session?.let {
             sessionDao.deleteSession(it)
+            
+            // Sync with backend (Delete)
+            try {
+                RetrofitInstance.api.deleteSession(sessionId)
+            } catch (e: Exception) {
+                android.util.Log.e("ChatRepository", "Failed to sync session deletion with backend", e)
+            }
         }
     }
 
     suspend fun renameSession(sessionId: String, newTitle: String) {
         val session = sessionDao.getSessionById(sessionId)
         session?.let {
-            sessionDao.updateSession(it.copy(title = newTitle))
+            val updatedSession = it.copy(title = newTitle)
+            sessionDao.updateSession(updatedSession)
+            
+            // Sync with backend (Update)
+            it.userId?.let { userId ->
+                try {
+                    RetrofitInstance.api.createOrUpdateSession(
+                        com.bytedance.firstapp.data.model.SessionRequest(
+                            id = updatedSession.id,
+                            title = updatedSession.title,
+                            userId = userId,
+                            lastMessagePreview = updatedSession.lastMessagePreview,
+                            createdAt = updatedSession.createdAt
+                        )
+                    )
+                } catch (e: Exception) {
+                    android.util.Log.e("ChatRepository", "Failed to sync session rename with backend", e)
+                }
+            }
         }
     }
 }

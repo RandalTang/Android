@@ -6,7 +6,17 @@ import com.google.gson.annotations.SerializedName
 
 data class ChatCompletionsRequest(
     val prompt: String,
-    val history: List<HistoryMessage>? = null
+    val history: List<HistoryMessage>? = null,
+    @SerializedName("session_id") val sessionId: String? = null,
+    @SerializedName("user_id") val userId: String? = null
+)
+
+data class SessionRequest(
+    val id: String,
+    val title: String,
+    @SerializedName("user_id") val userId: String,
+    @SerializedName("last_message_preview") val lastMessagePreview: String? = null,
+    @SerializedName("created_at") val createdAt: Long
 )
 
 data class HistoryMessage(
